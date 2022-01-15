@@ -1,0 +1,5 @@
+classified_images_cnn/
+captured_frames/
+video_data/
+test_images_yolo
+traffic.h5

@@ -13,6 +13,7 @@ import imageio
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
 import os
+import time
 classes = ['prohibitory', 'danger', 'mandatory', 'other']
 detected_img = 0
 
@@ -21,6 +22,7 @@ detected_img = 0
 """
 def yolo_detect_sign(img_path):
 
+    net = cv2.dnn.readNet("yolov4-tiny_training_1000.weights", "yolov4-tiny_training.cfg")
     layer_names = net.getLayerNames()
     output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
     colors = np.random.uniform(0, 255, size=(len(classes), 3))
@@ -167,31 +169,50 @@ def prediction(model_name, tbd_image_path,detected_output_path):
     Displays detected and classified image from a video frame
 """
 if __name__ == '__main__':
-    vid_capture = cv2.VideoCapture('video_data/2.mp4')
-    success, image = vid_capture.read()
-    count = 0
+    '''Input size expected by the classification_model'''
+    HEIGHT = 32
+    WIDTH = 32
+    ''' Load Yolo'''
     net = cv2.dnn.readNet("yolov4-tiny_training_1000.weights", "yolov4-tiny_training.cfg")
     
-#    classes = []
-#    with open("signs.names.txt", "r") as f:
-#        classes = [line.strip() for line in f.readlines()]
-#        
-#     #get last layers names
-#    layer_names = net.getLayerNames()
-#    output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-#    colors = np.random.uniform(0, 255, size=(len(classes), 3))
-#    check_time = True
-#    confidence_threshold = 0.5
-#    font = cv2.FONT_HERSHEY_SIMPLEX
-#    detection_confidence = 0.5
-#    
-    while success:
-        vid_capture.set(cv2.CAP_PROP_POS_MSEC, (count*1000))
-        cv2.imwrite("captured_frames/frame%d.jpg" %count, image)
-        path = 'captured_frames/frame'+str(count)+'.jpg'
-        yolo_detect_sign(path)
-        if count == 30: # To Do: else endless loop need to fix
+    classes = []
+    with open("signsnames.txt", "r") as f:
+        classes = [line.strip() for line in f.readlines()]
+    
+    layer_names = net.getLayerNames()
+    output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
+    colors = np.random.uniform(0, 255, size=(len(classes), 3))
+    check_time = True
+    confidence_threshold = 0.5
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    start_time = time.time()
+    frame_count = 0
+    
+    detection_confidence = 0.5
+    cap = cv2.VideoCapture(0)
+    
+    '''Load Classification Model'''
+#    classification_model = load_model('traffic.h5') #load mask detection model
+#    classes_classification = []
+#    with open("signnames.csv", "r") as f:
+#        classes_classification = [line.strip() for line in f.readlines()]
+    
+    tfps = 30
+    cap = cv2.VideoCapture('video_data/3.mp4')
+    fps = round(cap.get(cv2.CAP_PROP_FPS))
+    hop = round(fps/tfps)
+    curr_frame = 0
+    while(True):
+        ret, frame = cap.read()
+        if not ret:
+            print('nooo')
             break
-        count +=1
-    vid_capture.release()
-    cv2.destroyAllWindows()
+        if curr_frame % hop == 0:
+            print('capturing frames')
+            path = 'captured_frames/frame'+str(curr_frame)+'.jpg'
+            cv2.imwrite("captured_frames/frame%d.jpg" %curr_frame, frame)
+            curr_frame += 1
+            
+    cap.release()
+    #yolo_detect_sign(path)
+

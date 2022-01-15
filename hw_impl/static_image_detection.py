@@ -1,13 +1,12 @@
-# -*- coding: utf-8 -*-
+ # -*- coding: utf-8 -*-
 """
 Created on Sun Jan  9 10:31:22 2022
 
-@author: Devika
+@author: 
 """
 from tensorflow.keras.models import load_model
-from skimage import transform
-from skimage import exposure
-from skimage import io
+import skimage
+from skimage import transform, exposure, io
 from imutils import paths
 import numpy as np
 import argparse
@@ -19,8 +18,8 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
 import imageio 
 det_img_cnt = 0
-image_path = "test_images_yolo/007.png"
-output_path = "classified_images_cnn/classified%d.jpg" %det_img_cnt
+image_path = "test_images_yolo/001_image1.png"
+output_path = "classified_images_cnn/classified%d.png" %det_img_cnt
 model_name = "trafficsignnet2.model"
 
 
@@ -77,24 +76,24 @@ if __name__ == '__main__':
     labels = []
     bbs=[]
     
-    print("[INFO] loading model...")
     model = load_model(model_name)
     
     #yolo setup
     net = cv2.dnn.readNet("yolov4-tiny_training_1000.weights", "yolov4-tiny_training.cfg")
     layer_names = net.getLayerNames()
     output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
-    # print(output_layers)
     confidence_threshold = 0.5
     
     #forward pass yolo
     image = cv2.imread(image_path)
     blob = cv2.dnn.blobFromImage(image, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
+#    plt.imshow(blob, interpolation='nearest')
+#    plt.show()
+#    print('fd')
     net.setInput(blob)
     outs = net.forward(output_layers)
-    
     #reading again since classfier performing better on skimage
-    image = imageio.imread(image_path)
+    image = skimage.io.imread(image_path)
     
     for out in outs:
         #     print(out.shape)
