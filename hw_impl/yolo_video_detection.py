@@ -2,18 +2,14 @@
 """
 Created on Fri Dec 17 10:05:37 2021
 
-@author: Devika Ajith
+@author: 
 """
-
-import cv2
 import numpy as np
-from tensorflow.keras.models import load_model
-#from skimage import io
-import imageio
-import matplotlib.pyplot as plt
-from matplotlib.pyplot import figure
-import os
+import cv2
 import time
+#from grabscreen import grab_screen
+from tensorflow.keras.models import load_model
+
 classes = ['prohibitory', 'danger', 'mandatory', 'other']
 detected_img = 0
 
@@ -44,13 +40,13 @@ if __name__ == '__main__':
     cap = cv2.VideoCapture(0)
     
     '''Load Classification Model'''
-    classification_model = load_model('trafficsignnet2.model') #load mask detection model
+    classification_model = load_model('traffic.h5') #load mask detection model
     classes_classification = []
-    with open("signnames.csv", "r") as f:
+    with open("classifiersignnames.txt", "r") as f:
         classes_classification = [line.strip() for line in f.readlines()]
     
     tfps = 30
-    cap = cv2.VideoCapture('video_data/3.mp4')
+    cap = cv2.VideoCapture('video_data/4.mp4')
     fps = round(cap.get(cv2.CAP_PROP_FPS))
     hop = round(fps/tfps)
     curr_frame = 0
@@ -60,7 +56,7 @@ if __name__ == '__main__':
 #            print('nooo')
             break
 #        if curr_frame % hop == 0:
-        print('capturing frames')
+#        print('capturing frames')
         path = 'captured_frames/frame'+str(curr_frame)+'.jpg'
         img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         
@@ -103,13 +99,17 @@ if __name__ == '__main__':
                 cv2.rectangle(img, (x, y), (x + w, y + h), (255,0,0), 2)
                 '''crop the detected signs -> input to the classification model'''
                 crop_img = img[y:y+h, x:x+w]
+                save_img = crop_img
                 if len(crop_img) >0:
+                    
+#                    print('image should show up herer')
                     crop_img = cv2.resize(crop_img, (WIDTH, HEIGHT))
                     crop_img =  crop_img.reshape(-1, WIDTH,HEIGHT,3)
                     prediction = np.argmax(classification_model.predict(crop_img))
                     label = str(classes_classification[prediction])
+                    print(label)
                     cv2.putText(img, label, (x, y), font, 0.5, (255,0,0), 2)
-
+                    cv2.imwrite("classified_images_cnn/" + label + ".jpg", save_img)
         elapsed_time = time.time() - start_time
         fps = frame_count/elapsed_time
         print ("fps: ", str(round(fps, 2)))
