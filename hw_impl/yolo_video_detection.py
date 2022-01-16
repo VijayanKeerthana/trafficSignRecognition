@@ -9,9 +9,34 @@ import cv2
 import time
 #from grabscreen import grab_screen
 from tensorflow.keras.models import load_model
+import tensorflow as tf
 
 classes = ['prohibitory', 'danger', 'mandatory', 'other']
 detected_img = 0
+
+import numpy as np
+import tensorflow as tf
+
+# Load the TFLite model and allocate tensors.
+interpreter = tf.lite.Interpreter(model_path="tmp2welsv5w.tflite")
+interpreter.allocate_tensors()
+
+# Get input and output tensors.
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
+print('input_details', input_details)
+print('output_details', output_details)
+# Test the model on random input data.
+#input_shape = input_details[0]['shape']
+#input_data = np.array(np.random.random_sample(input_shape), dtype=np.float32)
+#interpreter.set_tensor(input_details[0]['index'], input_data)
+
+#interpreter.invoke()
+
+# The function `get_tensor()` returns a copy of the tensor data.
+# Use `tensor()` in order to get a pointer to the tensor.
+output_data = interpreter.get_tensor(output_details[0]['index'])
+print(output_data)
 
 """ 
     Displays detected and classified image from a video frame
@@ -31,7 +56,7 @@ if __name__ == '__main__':
     output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
     colors = np.random.uniform(0, 255, size=(len(classes), 3))
     check_time = True
-    confidence_threshold = 0.5
+    confidence_threshold = 0.7
     font = cv2.FONT_HERSHEY_SIMPLEX
     start_time = time.time()
     frame_count = 0
@@ -40,10 +65,13 @@ if __name__ == '__main__':
     cap = cv2.VideoCapture(0)
     
     '''Load Classification Model'''
-    classification_model = load_model('traffic.h5') #load mask detection model
+    #classification_model = load_model('model.h5') #load mask detection model
+
     classes_classification = []
     with open("classifiersignnames.txt", "r") as f:
         classes_classification = [line.strip() for line in f.readlines()]
+        
+    
     
     tfps = 30
     cap = cv2.VideoCapture('video_data/4.mp4')
@@ -74,6 +102,7 @@ if __name__ == '__main__':
         class_ids = []
         confidences = []
         boxes = []
+        cnt = 0
         for out in outs:
             for detection in out:
                 scores = detection[5:]
@@ -100,16 +129,25 @@ if __name__ == '__main__':
                 '''crop the detected signs -> input to the classification model'''
                 crop_img = img[y:y+h, x:x+w]
                 save_img = crop_img
+#                img_array = np.array(crop_img,dtype="float32")
+#                img_array = np.expand_dims(img_array, axis=0)
                 if len(crop_img) >0:
-                    
-#                    print('image should show up herer')
                     crop_img = cv2.resize(crop_img, (WIDTH, HEIGHT))
                     crop_img =  crop_img.reshape(-1, WIDTH,HEIGHT,3)
-                    prediction = np.argmax(classification_model.predict(crop_img))
-                    label = str(classes_classification[prediction])
-                    print(label)
-                    cv2.putText(img, label, (x, y), font, 0.5, (255,0,0), 2)
-                    cv2.imwrite("classified_images_cnn/" + label + ".jpg", save_img)
+                    img_array = np.array(crop_img,dtype="float32")
+                    interpreter.set_tensor(input_details[0]['index'], img_array)
+
+                    interpreter.invoke()
+                    output_data = interpreter.get_tensor(output_details[0]['index'])
+                    prediction = output_data.argmax()
+#                    print('image should show up herer')
+#                   
+#                    prediction = np.argmax(classification_model.predict(crop_img))
+#                    label = str(classes_classification[prediction])
+                    print(prediction, classes_classification[prediction])
+#                    cv2.putText(img, label, (x, y), font, 0.5, (255,0,0), 2)
+#                    cv2.imwrite("classified_images_cnn/" + label+ str(i) + ".jpg", save_img)
+                    cnt+=1
         elapsed_time = time.time() - start_time
         fps = frame_count/elapsed_time
         print ("fps: ", str(round(fps, 2)))
