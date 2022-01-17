@@ -60,7 +60,7 @@ def crop_roi(image,box):
 """
 if __name__ == '__main__':
 
-    video_path = "D:\\GTSRB Dataset\\gtsrb\\video_input\\munich.mp4"
+    video_path = "D:\\GTSRB Dataset\\gtsrb\\video_input\\3.mp4"
     output_path = "D:\\GTSRB Dataset\\gtsrb\\video_output\\115_opt"
     # model_name = "D:\\GTSRB Dataset\\gtsrb\\trafficsignnet.model\\20211217-230518" #original io model
     # model_name = "D:\\GTSRB Dataset\\gtsrb\\trafficsignnet.model\\20220116-062159" #cv2 model
@@ -150,5 +150,9 @@ if __name__ == '__main__':
                 continue
             except KeyboardInterrupt:
                 print ("avg fps: ", (time.time() - total_time)/curr_frame/skip_frame)
+                cap.release()
+                cv2.destroyAllWindows()
+                sys.exit(0)
+    print ("avg fps: ", (curr_frame/skip_frame)/(time.time() - total_time))
     cap.release()
     cv2.destroyAllWindows()

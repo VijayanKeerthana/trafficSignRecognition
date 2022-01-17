@@ -63,7 +63,7 @@ def signal_handler(sig, frame):
 """
 if __name__ == '__main__':
 
-    video_path = "D:\\GTSRB Dataset\\gtsrb\\video_input\\2.mp4"
+    video_path = "D:\\GTSRB Dataset\\gtsrb\\video_input\\3.mp4"
     output_path = "D:\\GTSRB Dataset\\gtsrb\\video_output\\clahe"
     # model_name = "D:\\GTSRB Dataset\\gtsrb\\trafficsignnet.model\\20211217-230518" #original io model
     # model_name = "D:\\GTSRB Dataset\\gtsrb\\trafficsignnet.model\\20220116-062159" #cv2 model
@@ -154,7 +154,9 @@ if __name__ == '__main__':
                 continue
             except KeyboardInterrupt:
                 print ("avg fps: ", (curr_frame/skip_frame)/(time.time() - total_time))
+                cap.release()
+                cv2.destroyAllWindows()
                 sys.exit(0)
-
+    print ("avg fps: ", (curr_frame/skip_frame)/(time.time() - total_time))
     cap.release()
     cv2.destroyAllWindows()
