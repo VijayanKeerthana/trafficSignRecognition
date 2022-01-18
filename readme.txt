@@ -9,3 +9,6 @@ The folder training code contains two parts:
 	
 Link for trafficsignnet model (another one)
 https://drive.google.com/file/d/1U31uiY-JbAWoM0pAhpT0quVggF0p0CZl/view?usp=sharing
+
+Test output on video:
+https://drive.google.com/file/d/1n6ALr4aK9XSaJbNv4nTS1_PFXQ5AbdMy/view?usp=sharing
